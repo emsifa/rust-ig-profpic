@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Instagram HD Profile Pic Downloader</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    .container {
+      max-width: 480px;
+    }
+  </style>  
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="row min-vh-100">
+        <div class="col-sm-12 my-auto">
+          <h5 class="text-center mb-4 text-muted">INSTAGRAM HD PROFILE PIC DOWNLOADER</h5>
+          <form action="" @submit.prevent="submit" :disabled="submitting">
+            <div class="form-group">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">USERNAME</span>
+                </div>
+                <input ref="username" type="text" class="form-control" v-model="username"/>
+                <div class="input-group-append">
+                  <button :disabled="submitting" class="btn btn-info">
+                    {{ submitting ? 'SUBMITTING...' : 'SUBMIT' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div v-if="invalid && validating" class="alert alert-warning">{{ invalid }}</div>
+          <div v-if="error" class="alert alert-danger">{{ error }}</div>
+
+          <div v-if="url" class="card mb-4">
+            <a :href="url" target="_blank" :download="username">
+              <img :src="url" class="card-img-top">
+            </a>
+            <div class="card-footer">
+              <a :download="username" :href="url" target="_blank" class="btn btn-info btn-block">Download</a>
+            </div>
+          </div>
+
+          <footer class="text-sm text-center text-muted">
+            &copy; 2019 - Muhammad Syifa
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        error: '',
+        submitting: false,
+        username: '',
+        url: '',
+        validating: false,
+      },
+      computed: {
+        invalid() {
+          if (!this.username.trim()) {
+            return 'Username cannot be blank';
+          }
+
+          if (this.username.match(/\s/)) {
+            return 'Username cannot contain whitespace';
+          }
+
+          return '';
+        }
+      },
+      mounted() {
+        this.$refs.username.focus();
+      },
+      methods: {
+        async submit() {
+          this.validating = true;
+          if (this.invalid) {
+            return;
+          }
+
+          try {
+            this.error = '';
+            this.submitting = true;
+            const result = await axios.get(`api/hd-pic/${this.username}`);
+            this.submitting = false;
+            this.url = result.data.url;
+          } catch(e) {
+            this.url = '';
+            this.submitting = false;
+            this.error = e.response && e.response.data.message ? e.response.data.message : 'Something went wrong';
+          }
+        }
+      }
+    })
+  </script>
+</body>
+</html>
